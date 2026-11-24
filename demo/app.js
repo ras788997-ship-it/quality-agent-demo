@@ -295,9 +295,7 @@
         <span class="acc-note">${esc(a.note || "")}</span>
       </button>`;
     }).join("");
-    el.loginModeHint.textContent = state.demoMode
-      ? "演示模式：点击卡片自动填入演示密码"
-      : "请输入公司账号密码";
+    el.loginModeHint.textContent = "";
   }
 
   function fillLoginAccount(username) {
@@ -320,9 +318,7 @@
     el.loginPage.classList.remove("hide");
     el.app.classList.add("hide");
     el.loginTitle.textContent = switching ? "切换账号" : "演示账号";
-    el.loginSub.textContent = switching
-      ? `当前账号 ${state.user.display_name}。选择其他演示账号即可切换。`
-      : "点击账号卡片自动填入密码；也可直接输入账号密码登录。";
+    el.loginSub.textContent = switching ? `当前账号 ${state.user.display_name}` : "";
     el.loginBtn.textContent = switching ? "切换并进入" : "进入系统";
     el.loginBack.classList.toggle("hide", !switching);
     el.loginError.classList.add("hide");
@@ -633,13 +629,8 @@
   function renderWelcome() {
     const u = state.user;
     if (!u) return;
-    const p = u.permissions || {};
-    const intro = (p["search"] && p["ledger.query"])
-      ? "用你自己的话问。我会给出结论，并告诉你出自哪个文件、第几页 / 第几行；台账数据按你的权限统计，需要时还能生成 Excel / PPT 报表。"
-      : "用你自己的话问。我会给出结论，并告诉你出自哪个文件、第几页 / 第几行；越权内容不会展示。";
     el.welcome.innerHTML = `
-      <h2>你好，${esc(u.display_name)}。问点什么？</h2>
-      <p>${intro}</p>
+      <h2>你好，${esc(u.display_name)}</h2>
       <div class="chips" id="chips"></div>
       <p class="hint" id="welcomeMeta"></p>`;
     const box = $("#chips", el.welcome);
@@ -656,15 +647,9 @@
     const scope = status?.scope || {};
     const led = status?.ledger?.stats || {};
     const parts = [];
-    if (files.files != null) parts.push(`可见 ${num(files.files)} 个文件 / ${num(files.chunks ?? 0)} 个片段`);
-    else if (scope.visible_files != null) parts.push(`可见 ${num(scope.visible_files)} 个文件`);
     if (scope.hidden_files) parts.push(`另有 ${num(scope.hidden_files)} 份受限资料按密级隐藏`);
     if (scope.hidden_records) parts.push(`台账另有 ${num(scope.hidden_records)} 条记录按权限隐藏`);
-    if (led.records != null) {
-      const label = scope.ledger_label || SCOPE_LABEL[scope.ledger] || "";
-      parts.push(`台账 ${num(led.records)} 条${label ? `（${label}）` : ""}`);
-    }
-    node.textContent = parts.length ? parts.join(" · ") : "";
+    node.textContent = parts.join(" · ");
   }
 
   /* ---------------------------- 提问与回答 ---------------------------- */
@@ -834,7 +819,7 @@
     if (!cites.length) return;
     const box = document.createElement("div");
     box.className = "sources in-bubble";
-    box.innerHTML = "<h4>来源（点「打开位置」跳到文件所在文件夹）</h4>";
+    box.innerHTML = "<h4>来源</h4>";
     const fallbackLevel = Number(sec.level) >= 3
       ? { name: sec.level_name || levelInfo(sec.level)?.name, color: levelColor(sec.level, sec.level_name) }
       : null;
@@ -894,7 +879,7 @@
     if (r.llm) {
       el.llmMode.textContent =
         r.llm.mode === "extractive"
-          ? "检索模式：抽取式（不调用外部模型）"
+          ? "检索模式：抽取式"
           : `检索模式：${r.llm.mode}${r.llm.available ? "" : "（未连通，已回退抽取式）"}`;
     }
   }
@@ -1145,8 +1130,8 @@
     const canGenerate = !!state.user?.permissions?.["report.generate"];
     if (!items.length) {
       el.panelBody.innerHTML = `<p class="panel-empty">${canGenerate
-        ? "当前账号还没有可下载的报表。在对话里说「生成 2026 年 9 月的不良率报表，按料号，导出 Excel」即可。"
-        : "当前账号无生成报表的权限，也没有可见的历史报表。"}</p>`;
+        ? "暂无报表。在对话里说要哪份即可。"
+        : "当前账号无报表权限。"}</p>`;
       return;
     }
     el.panelBody.innerHTML = items.map((it) => {
@@ -1190,7 +1175,6 @@
       <div class="terms">${terms.slice(0, 14).map((t) => `<span class="term">${esc(t.term)} ×${num(t.hits)}</span>`).join("") || '<span class="muted">暂无</span>'}</div>
       <h4>最近问过</h4>
       <ul class="events">${recent.slice(0, 12).map((q) => `<li><span>${fmtTime(q.ts)} · [${esc(INTENT_LABEL[q.intent] || q.intent)}] ${esc(q.question)}</span></li>`).join("") || '<li class="muted">暂无</li>'}</ul>
-      <p class="muted">重复问题会秒回；台账与文件没变时报表不重复计算。</p>
       <button class="ghost danger" data-act="mem-clear">清空${r.scope === "all" ? "全员" : "我的"}记忆与缓存</button>`;
   }
 
@@ -1444,13 +1428,10 @@
         <div class="sc-head">
           <span class="sc-id">${esc(s.id)}</span>
           <span class="sc-phase">${esc(s.phase || "")}</span>
-          <span class="sc-min">${esc(s.minutes || "—")} 分钟</span>
         </div>
         <div class="sc-title">${esc(s.title || "")}</div>
         <div class="sc-line">账号：<b>${esc(account)}</b> · 动作：${esc(actionLabel)}</div>
         ${s.question ? `<div class="sc-q">问题：${esc(s.question)}</div>` : ""}
-        <div class="sc-why"><b>为什么：</b>${esc(s.why || "")}</div>
-        <div class="sc-expect"><b>预期：</b>${esc(s.expect || "")}</div>
         <div class="sc-ops">
           <button class="ghost" data-act="demo-switch" data-user="${esc(s.account)}">切换到该账号</button>
           <button class="primary" data-act="demo-run" data-id="${esc(s.id)}">执行</button>
@@ -1460,14 +1441,12 @@
     el.panelBody.innerHTML = `
       <div class="demo-head">
         <h3>${esc(data.title || "权限与保密演示")}</h3>
-        <p>${esc(data.intro || "")}</p>
         <div class="p-actions">
           ${canSim ? '<button class="primary" data-act="sim-save" id="btnSimSave">模拟王芳保存台账</button>' : ""}
           <button class="ghost danger" data-act="demo-reset">重置演示</button>
         </div>
       </div>
-      ${cards || '<p class="panel-empty">没有演示场景。</p>'}
-      <p class="demo-foot">按场景顺序点「执行」即可；「模拟保存」后监听器会在 8 秒内把新台账合并进主档。</p>`;
+      ${cards || '<p class="panel-empty">没有演示场景。</p>'}`;
     if (state.scenarioScroll) {
       state.scenarioScroll = false;
       const active = el.panelBody.querySelector(".sc-card.active");
