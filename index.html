@@ -16,7 +16,6 @@
       <div class="logo logo-lg">QA</div>
       <div>
         <h1>质量部 AI 助手</h1>
-        <p>查资料 · 查台账 · 出报表 · 记性</p>
       </div>
     </div>
     <h2 class="login-slogan">查得准 · 有权限 · 留得住痕</h2>
@@ -43,7 +42,7 @@
     <div class="login-card">
       <div class="login-card-head">
         <h2 id="loginTitle">演示账号</h2>
-        <p id="loginSub">点击账号卡片自动填入密码；也可直接输入账号密码登录。</p>
+        <p id="loginSub"></p>
       </div>
 
       <div class="account-grid" id="accountGrid">
@@ -67,7 +66,6 @@
         </div>
       </form>
 
-      <p class="login-tip">演示账号，密码已预填；正式上线改公司 AD 登录</p>
     </div>
   </div>
 </div>
@@ -82,7 +80,7 @@
         <div class="logo">QA</div>
         <div>
           <h1>质量部 AI 助手</h1>
-          <p class="sub">查资料 · 查台账 · 出报表 · 记性</p>
+          
         </div>
       </div>
 
@@ -120,9 +118,8 @@
   <div class="layout">
     <main class="chat" id="chat">
       <section class="welcome" id="welcome">
-        <h2>你好，问点什么？</h2>
-        <p>用你自己的话问。我会给出结论，并告诉你出自哪个文件、第几页 / 第几行；
-           台账数据按你的权限统计，需要时还能生成 Excel / PPT 报表。</p>
+        <h2>你好</h2>
+
         <div class="chips" id="chips"></div>
         <p class="hint" id="welcomeMeta"></p>
       </section>
@@ -144,9 +141,7 @@
       <button id="send" title="发送">发送</button>
     </div>
     <div class="footnote">
-      <span id="llmMode">检索模式：抽取式（不调用外部模型）</span>
-      <span class="sep">·</span>
-      <span>答案均可回溯到原文；未授权内容一律不展示</span>
+      <span id="llmMode">检索模式：抽取式</span>
       <span class="sep">·</span>
       <span>静态演示：预置数据快照，不能查询新内容</span>
     </div>
