@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>质量部 AI 助手</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<!-- ==================== 登录页 ==================== -->
+<div class="login-page" id="loginPage">
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="logo logo-lg">QA</div>
+      <div>
+        <h1>质量部 AI 助手</h1>
+        <p>查资料 · 查台账 · 出报表 · 记性</p>
+      </div>
+    </div>
+    <h2 class="login-slogan">查得准 · 有权限 · 留得住痕</h2>
+    <p class="login-desc">
+      同一套系统、同一批数据，登录的账号不同，能看到的资料、数据范围和可做的操作也不同。
+      敏感字段自动脱敏，越权动作一律拦截并写入审计。
+    </p>
+
+    <div class="login-levels">
+      <h3>资料密级</h3>
+      <ul>
+        <li><span class="lv-dot" style="background:#16a34a"></span><b>公开</b><span>可对外提供，如质量方针</span></li>
+        <li><span class="lv-dot" style="background:#2563eb"></span><b>内部</b><span>质量部内部使用，如制度、检验记录</span></li>
+        <li><span class="lv-dot" style="background:#d97706"></span><b>机密</b><span>限经理及以上或获批人员</span></li>
+        <li><span class="lv-dot" style="background:#dc2626"></span><b>绝密</b><span>限管理员或专项授权</span></li>
+      </ul>
+      <p class="login-levels-note">越权提问不会看到内容，只提示命中了多少份受限资料。</p>
+    </div>
+
+    <div class="login-foot">质量部内部系统 · v0.3 演示 · 静态演示页：预置数据快照，非真实运行系统</div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card">
+      <div class="login-card-head">
+        <h2 id="loginTitle">演示账号</h2>
+        <p id="loginSub">点击账号卡片自动填入密码；也可直接输入账号密码登录。</p>
+      </div>
+
+      <div class="account-grid" id="accountGrid">
+        <p class="muted login-loading">正在读取演示账号…</p>
+      </div>
+
+      <form class="login-form" id="loginForm" autocomplete="off">
+        <div class="login-fields">
+          <label>账号
+            <input id="loginUser" name="username" type="text" placeholder="如 wangfang" autocomplete="username" spellcheck="false">
+          </label>
+          <label>密码
+            <input id="loginPass" name="password" type="password" placeholder="演示密码自动填入" autocomplete="current-password">
+          </label>
+          <button type="submit" class="primary login-submit" id="loginBtn">进入系统</button>
+        </div>
+        <p class="login-error hide" id="loginError" role="alert"></p>
+        <div class="login-extra">
+          <button type="button" class="ghost hide" id="loginBack">返回系统</button>
+          <span class="muted" id="loginModeHint"></span>
+        </div>
+      </form>
+
+      <p class="login-tip">演示账号，密码已预填；正式上线改公司 AD 登录</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 应用 ==================== -->
+<div class="app hide" id="app">
+  <div class="watermark" id="watermark" aria-hidden="true"></div>
+
+  <header class="header">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">QA</div>
+        <div>
+          <h1>质量部 AI 助手</h1>
+          <p class="sub">查资料 · 查台账 · 出报表 · 记性</p>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <div class="status" id="status">
+          <span class="dot" id="dot"></span>
+          <span id="statusText">正在连接…</span>
+          <span class="sep">|</span>
+          <span id="statFiles">—</span>
+        </div>
+
+        <div class="user-pill" id="userPill" title="当前登录账号">
+          <span class="avatar" id="userAvatar">王</span>
+          <span class="u-name" id="userName">—</span>
+          <span class="badge role" id="userRole">—</span>
+          <span class="badge level" id="userLevel">—</span>
+          <span class="badge grant hide" id="userGrant"></span>
+        </div>
+
+        <div class="top-actions">
+          <button class="ghost" id="btnPanel" title="台账 / 报表 / 记忆 / 审计 / 权限 / 演示">台账 / 报表</button>
+          <button class="ghost" id="btnMyPerm" title="查看我的权限与角色矩阵">我的权限</button>
+          <button class="ghost" id="btnSwitch" title="切换演示账号">切换账号</button>
+          <button class="ghost" id="btnLogout" title="退出登录">退出</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="perm-bar" id="permBar">
+      <span class="perm-text" id="permText">正在读取当前账号权限…</span>
+      <button class="perm-close" id="permClose" title="关闭提示条" aria-label="关闭提示条">×</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main class="chat" id="chat">
+      <section class="welcome" id="welcome">
+        <h2>你好，问点什么？</h2>
+        <p>用你自己的话问。我会给出结论，并告诉你出自哪个文件、第几页 / 第几行；
+           台账数据按你的权限统计，需要时还能生成 Excel / PPT 报表。</p>
+        <div class="chips" id="chips"></div>
+        <p class="hint" id="welcomeMeta"></p>
+      </section>
+    </main>
+
+    <aside id="panel" class="panel hide" aria-label="数据与安全侧栏">
+      <div class="panel-head">
+        <strong id="panelTitle">数据与安全</strong>
+        <button class="icon" id="panelClose" title="关闭">×</button>
+      </div>
+      <div class="tabs" id="panelTabs"></div>
+      <div id="panelBody" class="panel-body"><p class="muted">正在加载…</p></div>
+    </aside>
+  </div>
+
+  <footer class="composer">
+    <div class="inputwrap">
+      <textarea id="q" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+      <button id="send" title="发送">发送</button>
+    </div>
+    <div class="footnote">
+      <span id="llmMode">检索模式：抽取式（不调用外部模型）</span>
+      <span class="sep">·</span>
+      <span>答案均可回溯到原文；未授权内容一律不展示</span>
+      <span class="sep">·</span>
+      <span>静态演示：预置数据快照，不能查询新内容</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ==================== 弹窗 ==================== -->
+<div class="modal hide" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-mask" data-modal-close="1"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modalTitle">申请授权</h3>
+      <button class="icon" data-modal-close="1" title="关闭" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="./mock-api.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
