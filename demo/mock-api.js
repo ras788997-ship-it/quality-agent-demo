@@ -15,6 +15,7 @@
   var KEY = "qa_demo_user";
   var currentUser = localStorage.getItem(KEY) || "";
   var cache = Object.create(null);
+  var approvedOne = false;
 
   function loadJson(rel) {
     if (cache[rel]) return cache[rel];
@@ -159,6 +160,21 @@
       return pass(await userFile("ledger-records"));
     }
 
+    // 待审批列表：批过一次之后就把卡片清掉，免得看着像没生效
+    if (method === "GET" && path === "/api/access/requests") {
+      var rec = await userFile("access-requests");
+      if (approvedOne && rec && rec.body && Array.isArray(rec.body.pending) && rec.body.pending.length) {
+        var clone = JSON.parse(JSON.stringify(rec.body));
+        var item = clone.pending[0];
+        clone.pending = [];
+        clone.decided = [Object.assign({}, item, {
+          status: "approved", approver: "张伟", minutes: 30, note: "演示批准"
+        })];
+        return reply(rec.status, clone);
+      }
+      return pass(rec);
+    }
+
     // 只读接口
     if (method === "GET" && GET_MAP[path]) {
       return pass(await userFile(GET_MAP[path]));
@@ -167,12 +183,16 @@
     // 写操作：回放录制的响应
     var POST_MAP = {
       "/api/access/request": "post/access-request.json",
-      "/api/access/approve": "post/access-approve.json",
       "/api/ledger/sync": "post/ledger-sync.json",
       "/api/memory/clear": "post/memory-clear.json"
     };
     if (method === "POST" && POST_MAP[path]) {
       return pass(await recorded(POST_MAP[path]));
+    }
+    if (method === "POST" && path === "/api/access/approve") {
+      var ok = !body || body.approve !== false;
+      if (ok) approvedOne = true;
+      return pass(await recorded("post/access-approve.json"));
     }
     if (method === "POST" && path === "/api/demo/simulate-ledger-save") {
       return reply(200, { ok: true, message: "已模拟保存台账（静态演示，不会真的改数据）" });
@@ -205,4 +225,15 @@
       return reply(500, { ok: false, error: "静态演示加载失败：" + (e && e.message ? e.message : e) });
     });
   };
+
+  // 静态页没有后端文件，点下载类链接时给个明确提示，别让浏览器直接 404
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+    var href = a.getAttribute("href") || "";
+    if (href.indexOf("/api/") === 0) {
+      e.preventDefault();
+      window.alert("静态演示页不包含文件下载。真实系统在本地运行时会生成文件。");
+    }
+  }, true);
 })();
